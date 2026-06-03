@@ -21,7 +21,7 @@ connectToMongoDB(process.env.MONGO_URI)
 app.use(cors({
     origin: [
         'http://localhost:5173',
-        'https://short-url-alpha-sage.vercel.app/',
+        'https://short-url-alpha-sage.vercel.app',
     ],
     credentials: true,
 }))
