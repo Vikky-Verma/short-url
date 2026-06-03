@@ -3,7 +3,7 @@ import axios from 'axios'
 
 const AuthContext = createContext(null)
 
-axios.defaults.baseURL = 'http://localhost:8001'
+axios.defaults.baseURL = import.meta.env.VITE_API_URL
 axios.defaults.withCredentials = true
 
 export function AuthProvider({ children }) {

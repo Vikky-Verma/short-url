@@ -51,7 +51,7 @@ export default function Analytics() {
                 <div className="absolute top-0 left-0 w-1 h-full bg-cyan-400" />
                 <div className="font-mono text-xs text-zinc-600 uppercase mb-2">Short URL</div>
                 <div className="font-mono text-sm text-green-400 break-all">
-                  http://localhost:8001/url/{shortId}
+                  {import.meta.env.VITE_API_URL}/url/{shortId}
                 </div>
               </div>
             </div>

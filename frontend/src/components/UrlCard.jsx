@@ -6,7 +6,7 @@ export default function UrlCard({ url, index, showOwner, onDelete }) {
   const [copied, setCopied] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const navigate = useNavigate()
-  const shortUrl = `http://localhost:8001/url/${url.shortId}`
+  const shortUrl = `${import.meta.env.VITE_API_URL}/url/${url.shortId}`
 
   const handleCopy = (e) => {
     e.stopPropagation()

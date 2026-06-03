@@ -209,4 +209,3 @@ export default function Dashboard() {
     </div>
   )
 }
-// mongodb+srv://VikkyVerma:<db_password>@cluster0.h1snyym.mongodb.net/?appName=Cluster0
