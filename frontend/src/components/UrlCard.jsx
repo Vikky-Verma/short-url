@@ -31,7 +31,9 @@ export default function UrlCard({ url, index, showOwner, onDelete }) {
 
   return (
     <div className={`border border-zinc-900 hover:border-zinc-700 bg-zinc-950 p-4 transition-all duration-200 group animate-fade-in ${copied ? 'copy-flash' : ''}`}>
-      <div className="flex items-start justify-between gap-4">
+      
+      {/* ✅ fixed: stack vertically on mobile */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2 flex-wrap">
             <span className="font-mono text-xs text-zinc-700">
@@ -58,14 +60,15 @@ export default function UrlCard({ url, index, showOwner, onDelete }) {
             )}
           </div>
 
-          <div className="font-mono text-xs text-zinc-500 truncate max-w-md">
+          <div className="font-mono text-xs text-zinc-500 truncate">
             {url.redirectUrl}
           </div>
-          <div className="font-mono text-xs text-zinc-700 mt-1">{shortUrl}</div>
+          <div className="font-mono text-xs text-zinc-700 mt-1 break-all">{shortUrl}</div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="text-right">
+        {/* ✅ fixed: buttons wrap on mobile */}
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
+          <div className="text-right mr-1">
             <div className="font-mono text-xl font-bold neon-text">
               {url.visitHistory?.length || 0}
             </div>
@@ -86,7 +89,6 @@ export default function UrlCard({ url, index, showOwner, onDelete }) {
             STATS →
           </button>
 
-          {/* Delete button */}
           <button
             onClick={handleDelete}
             disabled={deleting}
