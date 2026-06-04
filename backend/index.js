@@ -31,18 +31,28 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(checkForAuthentication)
 
-app.use('/url', restrictTo(['NORMAL', 'ADMIN']), urlRoute)
-app.use('/user', userRoute)
-app.use('/', staticRoute)
-
+// SHORT URL REDIRECT ROUTE
 app.get('/url/:shortId', async (req, res) => {
     const shortId = req.params.shortId
+
     const entry = await URL.findOneAndUpdate(
         { shortId },
         { $push: { visitHistory: { timestamp: Date.now() } } }
     )
-    if (!entry) return res.status(404).json({ error: 'Short URL not found' })
-    res.redirect(entry.redirectUrl)
+
+    if (!entry) {
+        return res.status(404).json({
+            error: 'Short URL not found'
+        })
+    }
+
+    return res.redirect(entry.redirectUrl)
 })
+
+app.use('/url', restrictTo(['NORMAL', 'ADMIN']), urlRoute)
+app.use('/user', userRoute)
+app.use('/', staticRoute)
+
+
 
 app.listen(port, () => console.log(`Server Started at PORT: ${port}`))
