@@ -2,55 +2,116 @@ const bcrypt = require("bcrypt");
 const { setUser } = require("../service/auth");
 const User = require("../models/user");
 
+const cookieOptions = {
+    httpOnly: true,
+    sameSite: "none",
+    secure: true,
+};
+
 async function handleUserSignup(req, res) {
-    const { name, email, password } = req.body;
+    try {
+        const { name, email, password } = req.body;
 
-    const existing = await User.findOne({ email });
-    if (existing) {
-        return res.status(400).json({ error: "Email already registered" });
+        if (!name || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                error: "All fields are required",
+            });
+        }
+
+        const existingUser = await User.findOne({ email });
+
+        if (existingUser) {
+            return res.status(400).json({
+                success: false,
+                error: "Email already registered",
+            });
+        }
+
+        const user = await User.create({
+            name,
+            email,
+            password,
+        });
+
+        const token = setUser(user);
+
+        res.cookie("token", token, cookieOptions);
+
+        return res.status(201).json({
+            success: true,
+            message: "Signup successful",
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+            },
+        });
+    } catch (error) {
+        console.error("Signup Error:", error);
+
+        return res.status(500).json({
+            success: false,
+            error: "Internal Server Error",
+        });
     }
-
-    const user = await User.create({ name, email, password });
-    const token = setUser(user);
-
-    res.cookie("token", token, {
-        httpOnly: true,
-        sameSite: "none",  // ✅ allows cross-site (Vercel → Render)
-        secure: true,      // ✅ required with sameSite "none"
-    });
-
-    return res.status(201).json({
-        message: "Signup successful",
-        user: { name: user.name, email: user.email, role: user.role }
-    });
 }
 
 async function handleUserLogin(req, res) {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                error: "Email and password are required",
+            });
+        }
 
-    if (!user) {
-        return res.status(401).json({ error: "Invalid email or password" });
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                error: "Invalid email or password",
+            });
+        }
+
+        const isMatch = await bcrypt.compare(
+            password,
+            user.password
+        );
+
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                error: "Invalid email or password",
+            });
+        }
+
+        const token = setUser(user);
+
+        res.cookie("token", token, cookieOptions);
+
+        return res.status(200).json({
+            success: true,
+            message: "Login successful",
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+            },
+        });
+    } catch (error) {
+        console.error("Login Error:", error);
+
+        return res.status(500).json({
+            success: false,
+            error: "Internal Server Error",
+        });
     }
-
-    // ✅ Compare with hashed password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-        return res.status(401).json({ error: "Invalid email or password" });
-    }
-
-    const token = setUser(user);
-    res.cookie("token", token, {
-        httpOnly: true,
-        sameSite: "none",  // ✅ fixed
-        secure: true,      // ✅ fixed
-    });
-
-    return res.status(200).json({
-        message: "Login successful",
-        user: { name: user.name, email: user.email, role: user.role }
-    });
 }
 
 module.exports = {
