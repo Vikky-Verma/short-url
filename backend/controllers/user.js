@@ -1,3 +1,4 @@
+const bcrypt = require("bcrypt");
 const { setUser } = require("../service/auth");
 const User = require("../models/user");
 
@@ -14,7 +15,8 @@ async function handleUserSignup(req, res) {
 
     res.cookie("token", token, {
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "none",  // ✅ allows cross-site (Vercel → Render)
+        secure: true,      // ✅ required with sameSite "none"
     });
 
     return res.status(201).json({
@@ -25,16 +27,24 @@ async function handleUserSignup(req, res) {
 
 async function handleUserLogin(req, res) {
     const { email, password } = req.body;
-    const user = await User.findOne({ email, password });
+
+    const user = await User.findOne({ email });
 
     if (!user) {
+        return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    // ✅ Compare with hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
         return res.status(401).json({ error: "Invalid email or password" });
     }
 
     const token = setUser(user);
     res.cookie("token", token, {
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "none",  // ✅ fixed
+        secure: true,      // ✅ fixed
     });
 
     return res.status(200).json({
